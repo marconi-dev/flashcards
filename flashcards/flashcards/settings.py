@@ -17,7 +17,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env"))
-print(BASE_DIR)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -44,15 +44,18 @@ INSTALLED_APPS = [
     #Terceiros
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-
+    
+    'corsheaders',
 
     #FlashCards
     'cadastro_e_login.apps.CadastroELoginConfig',
+    'baralhos.apps.BaralhosConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -90,7 +93,6 @@ if DEBUG:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 else:
     DATABASES = {
     'default': {
@@ -148,19 +150,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Configurações do projeto
 AUTH_USER_MODEL = 'cadastro_e_login.User'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'img/')
+MEDIA_URL = '/media/'
 
 #REST_FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
 }
 
 #SIMPLE_JWT 
-
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=150),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+
+#CORSHEADERS
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True 
+else:
+    CORS_ALLOWED_ORIGINS = [os.getenv("CORS_ALLOWED_ORIGINS")]
+ 

@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from ..models import User
+from cadastro_e_login.models import User
 
 
 class UserTestCase(APITestCase):

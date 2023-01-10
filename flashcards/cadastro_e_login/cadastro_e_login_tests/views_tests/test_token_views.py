@@ -3,7 +3,7 @@ from rest_framework import status
 
 from django.urls import reverse
 
-from ..models import User
+from cadastro_e_login.models import User
 
 
 
@@ -26,10 +26,11 @@ class TokenViewTestCase(APITestCase):
         """
         gerando um token com as informações do usuário.
         """
-       
-        
-        self.assertIsNotNone(
-            self.response.data['access'] and self.response.data['refresh']
+        self.assertTrue(
+            'access' in self.response.data
+        )
+        self.assertTrue(
+            'refresh' in self.response.data
         )
     
     def test_renovacao_de_token(self):

@@ -1,17 +1,18 @@
-from .views import UserView
-from django.urls import path 
-from rest_framework.routers import DefaultRouter
+from django.urls import path
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView
 )
 
+from .views import user_apiview
+
 urlpatterns = [ 
-    path('token/', TokenObtainPairView.as_view(), name='gera-token'),
-    path('renovar/', TokenRefreshView.as_view(), name='renova-token'),
+    path('conta/token/', TokenObtainPairView.as_view(), name='gera-token'),
+    path('conta/renovar/', TokenRefreshView.as_view(), name='renova-token'),
 ]
 
 
 urlpatterns += [
-    path('criar-usuario/', UserView.as_view(), name='criar-usuario')
+    path('conta/', user_apiview, name='criar-usuario')
 ]
 
