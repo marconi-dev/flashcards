@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     #FlashCards
     'cadastro_e_login.apps.CadastroELoginConfig',
     'baralhos.apps.BaralhosConfig',
+    'mesa.apps.MesaConfig',
 ]
 
 MIDDLEWARE = [

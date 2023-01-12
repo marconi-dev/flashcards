@@ -1,4 +1,8 @@
 from rest_framework.routers import DefaultRouter
+from mesa.views import MesaViewSet
 
-mesa_router = DefaultRouter()
-mesa_router.register('mesa', MesaViewSet, 'mesa')
+
+router = DefaultRouter()
+router.register('mesa', MesaViewSet, 'mesa')
+
+urlpatterns = router.urls

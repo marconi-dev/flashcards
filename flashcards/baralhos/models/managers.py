@@ -5,10 +5,9 @@ class BaralhosBaseManager(models.Manager):
         queryset = self.all()
         for tag in tags:
             queryset = queryset.filter(
-                tags__nome=tag
+                tags__nome__contains=tag.lower()
             )
         return queryset
-
 
 class BaralhoManager(BaralhosBaseManager):
     pass
