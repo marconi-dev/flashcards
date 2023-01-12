@@ -151,6 +151,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Configurações do projeto
 AUTH_USER_MODEL = 'cadastro_e_login.User'
 
+if DEBUG:
+    PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+]
+
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'img/')
 MEDIA_URL = '/media/'
 

@@ -1,11 +1,12 @@
+from datetime import date, timedelta
+
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from django.db import connection
 from django.urls import reverse
 
 from cadastro_e_login.models import User
-from baralhos.models.models import Tag, Baralho
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 
 class MesaViewTestCase(APITestCase):
     def setUp(self):
@@ -92,4 +93,69 @@ class MesaViewTestCase(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK
+        )
+
+    def test_clonar_baralho(self):
+        #antes de clonar
+        baralho = Baralho.objects.get(id=40)
+        cartas = [
+            Carta.objects.create(
+                baralho=baralho,
+                frente = Frente.objects.create(
+                    texto='Texto da frente de uma carta'
+                ),
+                verso = Verso.objects.create(
+                    texto='Texto do verso de uma carta'
+                ),
+                vista=True,
+                criada=date.today() - timedelta(days=30),
+                proxima_revisao=date.today()
+            ) for i in range(3)
+        ]
+                
+        nome = 'Baralho de teste 10'
+        self.assertEqual(
+            Baralho.objects.filter(nome=nome).count(), 2
+        )
+        self.assertEqual(
+            Carta.objects.count(), 3
+        )
+        self.assertEqual(
+            Carta.objects.filter(vista=True).count(), 3
+        )
+
+        #Clonando
+        self.client.force_authenticate(self.user)
+
+        url_clonar = self.url_detail + 'clonar/'
+        response = self.client.post(
+            url_clonar, format='json'
+        )
+
+        self.assertEqual( 
+            response.status_code, 
+            status.HTTP_201_CREATED
+        )
+
+        #Após clonar
+        self.assertEqual(
+            #Após clonar o número total de baralhos deve aumentar em 1.
+            Baralho.objects.filter(nome=nome).count(), 2+1
+        )
+        self.assertEqual(
+            #Apenas um baralho possui cartas, ao clonar este baralho
+            #com sucesso o total de cartas deve dobrar.
+            Carta.objects.count(), 3 * 2
+        )
+        self.assertEqual(
+            #Cartas novas devem ter vista=False
+            Carta.objects.filter(vista=True).count(), 3
+        )
+        self.assertEqual(
+            #O valor de "criada" deve ser de 30 dias atrás. 
+            #As cartas clonadas tem a mesma data de criação.
+            cartas[0].criada, Carta.objects.last().criada
+        )
+        self.assertFalse(
+            Baralho.objects.last().publico
         )

@@ -35,7 +35,8 @@ class BaralhoViewTestCase(APITestCase):
             "verso": Verso.objects.create(
                 texto="Texto do verso"
             ),
-            "proxima_revisao": date.today()
+            "proxima_revisao": date.today(),
+            "criada":date.today()
         } for i in range(2)]
         Carta.objects.create(**info[0])
         Carta.objects.create(**info[1], vista=True)
@@ -98,3 +99,14 @@ class BaralhoViewTestCase(APITestCase):
                 response.status_code,
                 status.HTTP_204_NO_CONTENT
             )
+
+    def test_publicar_baralho(self):
+        response = self.client.post(self.url_detail+'publicar/')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED
+        )
+        self.assertTrue(
+            Baralho.objects.get(id=1).publico
+        )

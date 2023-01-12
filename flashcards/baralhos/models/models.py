@@ -66,7 +66,7 @@ class Carta(models.Model):
     proxima_revisao = models.DateField()
     vista = models.BooleanField(default=False)
     nivel = models.IntegerField(default=1)
-    criada = models.DateField(auto_now_add=True)
+    criada = models.DateField()
     
     objects = managers.CartaManager()
 

@@ -47,6 +47,7 @@ class CartaCreateSerializer(serializers.Serializer):
         carta.verso = Verso.objects.create(texto=data['verso'])
         carta.baralho = Baralho.objects.get(pk=baralho_pk)
         carta.proxima_revisao = date.today()
+        carta.criada = date.today()
         return carta
         
     def __add_tags(self, data, carta):

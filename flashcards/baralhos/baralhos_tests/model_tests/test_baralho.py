@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from rest_framework.test import APITestCase
 
 from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
@@ -29,6 +29,7 @@ class BaralhoTestCase(APITestCase):
                 "verso": Verso.objects.create(
                     texto=f"Texto do verso"
                 ),
+                "criada":datetime.today()
             } for i in range(1, 10+1)
         ]
         for info in infos:

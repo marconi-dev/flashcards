@@ -37,7 +37,8 @@ class CartaViewTestCase(APITestCase):
                 verso=Verso.objects.create(
                     texto=f'Texto do verso {i}'
                 ),
-                proxima_revisao=date.today()
+                proxima_revisao=date.today(),
+                criada=date.today()
             ) for i in range(1, 10+1)
         ]
         tag = Tag.objects.create(nome='idiomas')

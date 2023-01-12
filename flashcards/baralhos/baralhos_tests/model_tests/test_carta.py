@@ -30,7 +30,8 @@ class CartaTestCase(APITestCase):
         self.carta = Carta.objects.create(
             baralho=self.baralho, 
             frente=self.frente, verso=self.verso,
-            proxima_revisao=datetime.today()        
+            proxima_revisao=datetime.today(),
+            criada=datetime.today()
         )
 
     

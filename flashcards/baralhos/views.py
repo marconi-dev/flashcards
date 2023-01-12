@@ -1,12 +1,17 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
 from django.shortcuts import get_list_or_404, get_object_or_404
 
-from .serializers.carta_serializers import CartaSerializer, CartaCreateSerializer
-from .serializers.baralho_serializers import BaralhoDetailSerializer, BaralhoSerializer
+from .serializers.carta_serializers import (
+    CartaSerializer, CartaCreateSerializer
+)
+from .serializers.baralho_serializers import (
+    BaralhoDetailSerializer, BaralhoSerializer
+)
 from .models.models import Baralho, Carta
 # Create your views here.
 
@@ -36,7 +41,24 @@ class BaralhoViewSet(ModelViewSet):
             )
         
         return super().get_serializer(*args, **kwargs)
-    
+
+    @action(['POST'], True, 'publicar', 'publicar-baralho')
+    def publicar_baralho(self, request, *args, **kwargs):
+        baralho = self.get_object()
+
+        if baralho.tags.all() is not None:
+            baralho.publico = True 
+            baralho.save()
+
+            return Response(
+                {'message':'Baralho criado com successo'}, 
+                status.HTTP_201_CREATED
+            )
+        return Response(
+            {'message':'Baralhos públicos devem possuir tags'}, 
+            status.HTTP_201_CREATED
+        )
+
 
 class CartaViewSet(ModelViewSet):
     serializer_class = CartaSerializer
