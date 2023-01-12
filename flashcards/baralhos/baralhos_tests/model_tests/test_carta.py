@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework.test import APITestCase
 
 from cadastro_e_login.models import User
-from baralhos.models import (
+from baralhos.models.models import (
     Baralho, Carta, Frente, Verso
 )
 

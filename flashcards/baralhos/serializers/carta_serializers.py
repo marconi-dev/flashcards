@@ -1,14 +1,21 @@
 from datetime import date
 
 from rest_framework import serializers
-from baralhos.models import Carta, Frente, Verso, Baralho
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso 
 
 
 class CartaCreateSerializer(serializers.Serializer):
     frente = serializers.CharField(required=False)
     frente_img = serializers.ImageField(required=False)
     verso = serializers.CharField()
-    
+    tags = serializers.CharField(required=False, write_only=True)
+
+    def validate_tags(self, tags: str):
+        try: return tags.lstrip().strip().lower().split(' ')
+        except: raise serializers.ValidationError(
+                'Tags devem ser separadas por espaço em branco'
+            )
+
     def validate(self, attrs):
         if not 'frente' in attrs and not 'frente_img' in attrs:
             raise serializers.ValidationError(
@@ -32,17 +39,32 @@ class CartaCreateSerializer(serializers.Serializer):
         
         return frente
     
-    def create(self, data):
+    def __set_carta(self, data):
         baralho_pk = self.context['baralho_pk']
         frente_info = self.__set_frente_info(data)
+        carta = Carta()
+        carta.frente = Frente.objects.create(**frente_info)
+        carta.verso = Verso.objects.create(texto=data['verso'])
+        carta.baralho = Baralho.objects.get(pk=baralho_pk)
+        carta.proxima_revisao = date.today()
+        return carta
+        
+    def __add_tags(self, data, carta):
+        """
+        Adiciona tags à carta. Se necessário cria a tag.
+        """
+        for nome in data['tags']:
+            tag = Tag.objects.get_or_create(nome=nome)
+            carta.tags.add(tag[0])
 
-        carta = dict()
-        carta['frente'] = Frente.objects.create(**frente_info)
-        carta['verso'] = Verso.objects.create(texto=data['verso'])
-        carta['baralho'] = Baralho.objects.get(pk=baralho_pk)
-        carta['proxima_revisao'] = date.today()
-        carta['tags'] = None
-        return Carta.objects.create(**carta)
+    def create(self, data):
+        carta = self.__set_carta(data)
+        carta.save()
+
+        if 'tags' in data:
+            self.__add_tags(data, carta)
+
+        return carta
 
     def update(self, carta, data):
         carta.frente.texto = data.get('frente', carta.frente.texto)
@@ -56,12 +78,12 @@ class CartaSerializer(serializers.ModelSerializer):
     verso = serializers.StringRelatedField()
     frente = serializers.StringRelatedField()
     imagem = serializers.ImageField(source='frente.imagem')
-
+    tags = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Carta
         fields = [
-            'id', 'frente', 'verso', 'nivel',
-            'imagem', 'proxima_revisao', 'vista'
+            'id', 'frente', 'verso', 'nivel', 'imagem', 
+            'proxima_revisao', 'tags', 'vista',
         ]
     

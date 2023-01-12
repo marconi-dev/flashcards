@@ -1,7 +1,7 @@
 from datetime import date
 from rest_framework.test import APITestCase
 
-from baralhos.models import Baralho, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 from cadastro_e_login.models import User
 
 class BaralhoTestCase(APITestCase):
@@ -16,6 +16,8 @@ class BaralhoTestCase(APITestCase):
             "nome":"Baralho de Teste",
         }
         self.baralho = Baralho.objects.create(**data)
+        tag = Tag.objects.create(nome='inglês')
+        self.baralho.tags.add(tag)
 
         infos = [
             {

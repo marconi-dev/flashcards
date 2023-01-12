@@ -1,9 +1,16 @@
 from datetime import date
-
 from django.db import models
+from baralhos.models import managers
 
 
 # Create your models here.
+class Tag(models.Model):
+    nome = models.CharField(max_length=64, unique=True)
+
+    def __str__(self):
+        return self.nome
+
+
 class Baralho(models.Model):
     usuario = models.ForeignKey(
         "cadastro_e_login.User", on_delete=models.CASCADE,
@@ -12,6 +19,8 @@ class Baralho(models.Model):
     nome = models.CharField(max_length=64)
     publico = models.BooleanField(default=False)
     atualizado = models.DateTimeField(auto_now_add=True)
+    tags = models.ManyToManyField(Tag)
+    objects = managers.BaralhoManager()
 
     @property
     def total_de_cartas(self):
@@ -53,12 +62,13 @@ class Carta(models.Model):
     verso = models.OneToOneField(
         'baralhos.Verso', on_delete=models.CASCADE
     )
-    tags = models.CharField(
-        max_length=255, blank=True, null=True
-    )
+    tags = models.ManyToManyField(Tag)
     proxima_revisao = models.DateField()
     vista = models.BooleanField(default=False)
     nivel = models.IntegerField(default=1)
+    criada = models.DateField(auto_now_add=True)
+    
+    objects = managers.CartaManager()
 
 
 class Frente(models.Model):

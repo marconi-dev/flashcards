@@ -1,16 +1,18 @@
 from datetime import date
-import json
 
 from rest_framework.test import APITestCase
 from rest_framework import status
 
 from django.urls import reverse
 
-from baralhos.models import Baralho, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 from cadastro_e_login.models import User 
 
 class CartaViewTestCase(APITestCase):
     def setUp(self):
+        h = date.today()
+        self.hoje = f"{h.year}-0{h.month}-{h.day}"
+        
         kwargs = {
             'baralho_pk': 1,
             'pk': 1
@@ -38,6 +40,10 @@ class CartaViewTestCase(APITestCase):
                 proxima_revisao=date.today()
             ) for i in range(1, 10+1)
         ]
+        tag = Tag.objects.create(nome='idiomas')
+        for carta in self.cartas:
+            carta.tags.add(tag)
+
         self.client.force_authenticate(self.user)
     
 
@@ -48,13 +54,13 @@ class CartaViewTestCase(APITestCase):
         expected_data = [{
             'id': 1, 'frente': 'Texto da frente 1', 
             'verso': 'Texto do verso 1', 'nivel': 1, 
-            'imagem': None, 'proxima_revisao': '2023-01-10', 
-            'vista': False
+            'imagem': None, 'proxima_revisao': self.hoje, 
+            'tags': ['idiomas'], 'vista': False
         }, {
             'id': 10, 'frente': 'Texto da frente 10', 
             'verso': 'Texto do verso 10', 'nivel': 1, 
-            'imagem': None, 'proxima_revisao': '2023-01-10', 
-            'vista': False
+            'imagem': None, 'proxima_revisao': self.hoje, 
+            'tags': ['idiomas'], 'vista': False
         }]
         
         self.assertEqual(
@@ -86,7 +92,8 @@ class CartaViewTestCase(APITestCase):
     def test_carta_post(self):
         data = {
             'frente': 'Texto da frente da nova carta',
-            'verso': 'Texto do verso da nova carta'
+            'verso': 'Texto do verso da nova carta',
+            'tags':"idiomas inglês poliglota"
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(
@@ -114,10 +121,16 @@ class CartaViewTestCase(APITestCase):
         )
 
         expected_data = {
-            'id': 1, 'frente': 'Texto da frente 1', 
-            'verso': 'Texto do verso 1', 'nivel': 1, 
-            'imagem': None, 'proxima_revisao': '2023-01-10', 
-            'vista': False}
+            'id':1,
+            'frente': 'Texto da frente 1',
+            'verso': 'Texto do verso 1',
+            'nivel': 1,
+            'imagem': None,
+            'proxima_revisao': self.hoje,
+            'tags': ['idiomas'],
+            'vista': False
+        }
+        
         self.assertEqual(
             response.data,
             expected_data

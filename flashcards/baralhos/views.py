@@ -6,8 +6,8 @@ from rest_framework import status
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from .serializers.carta_serializers import CartaSerializer, CartaCreateSerializer
-from .serializers.baralho_serializers import BaralhoSerializer
-from .models import Baralho, Carta
+from .serializers.baralho_serializers import BaralhoDetailSerializer, BaralhoSerializer
+from .models.models import Baralho, Carta
 # Create your views here.
 
 class BaralhoViewSet(ModelViewSet):
@@ -20,11 +20,21 @@ class BaralhoViewSet(ModelViewSet):
         )
 
     def get_serializer(self, *args, **kwargs):
+        if 'many' in kwargs:
+            return super().get_serializer(*args, **kwargs)
+
+        if self.request.method == 'GET':
+            return BaralhoDetailSerializer(
+                self.get_object()
+            )
+
         if self.request.method == 'POST':
+            
             return BaralhoSerializer(
                 data=self.request.data, 
                 context={"request":self.request}
             )
+        
         return super().get_serializer(*args, **kwargs)
     
 
