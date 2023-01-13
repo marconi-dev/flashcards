@@ -1,4 +1,5 @@
-from datetime import date
+from math import ceil
+from datetime import date, timedelta
 from django.db import models
 from baralhos.models import managers
 
@@ -10,7 +11,8 @@ class Tag(models.Model):
     def __str__(self):
         return self.nome
 
-
+HOJE = date.today()
+AMANHA = HOJE + timedelta(days=1)
 class Baralho(models.Model):
     usuario = models.ForeignKey(
         "cadastro_e_login.User", on_delete=models.CASCADE,
@@ -37,16 +39,33 @@ class Baralho(models.Model):
         return self.cartas_nao_vistas.count()
 
     @property
+    def cartas_para_ver(self):
+        queryset = self.cartas.filter(proxima_revisao=HOJE)
+        queryset = queryset.order_by('criada')
+        
+        limite_diario = 20
+        cartas_acima_do_limite_diario = queryset[limite_diario:]
+        for carta in cartas_acima_do_limite_diario:
+            carta.proxima_revisao=AMANHA
+            carta.save()
+
+        return queryset
+
+    @property
+    def num_cartas_para_ver(self):
+        return self.num_cartas_nao_vistas.count()
+    
+    @property
     def cartas_para_revisar(self):
         return self.cartas.filter(
             vista=True,
-            proxima_revisao=date.today()
+            proxima_revisao__lte=HOJE
         )
 
     @property
     def num_cartas_para_revisar(self):
         return self.cartas_para_revisar.count()
-
+    
     def __str__(self):
         return self.nome
     
@@ -70,6 +89,32 @@ class Carta(models.Model):
     
     objects = managers.CartaManager()
 
+    def __str__(self) -> str:
+        return self.frente.texto
+
+    def _marcar_revisao(self):
+        """
+        Marca a próxima revisão com base em 20% do quadrado
+        do nivel da carta.
+        """
+        dias_ate_a_proxima_revisao = ceil(self.nivel**2 * 0.2) 
+        self.proxima_revisao = HOJE + timedelta(dias_ate_a_proxima_revisao)
+ 
+    def _reset(self):
+        self.nivel = 1
+        self.proxima_revisao = HOJE
+        self.save()
+
+    def estudar(self, status):
+        self.vista = True
+        if status == '0': return self._reset()
+        elif status == '1': pass
+        elif status == '2': self.nivel += 1
+        elif status == '3': self.nivel += 2
+        else: raise TypeError
+
+        self._marcar_revisao()
+        self.save()
 
 class Frente(models.Model):
     imagem = models.ImageField(
