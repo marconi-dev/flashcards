@@ -20,9 +20,7 @@ class BaralhoViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Baralho.objects.filter(
-            usuario=self.request.user
-        )
+        return Baralho.objects.listar_com_info().filter(usuario=self.request.user)
 
     def get_serializer(self, *args, **kwargs):
         if 'many' in kwargs:

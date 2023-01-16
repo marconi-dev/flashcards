@@ -24,6 +24,14 @@ class Baralho(models.Model):
     tags = models.ManyToManyField(Tag)
     objects = managers.BaralhoManager()
 
+
+    def __str__(self):
+        return self.nome
+    
+class BaralhoInfoExtra(Baralho):
+    class Meta:
+        proxy=True
+
     @property
     def total_de_cartas(self):
         return self.cartas.count()
@@ -38,6 +46,17 @@ class Baralho(models.Model):
     def num_cartas_nao_vistas(self):
         return self.cartas_nao_vistas.count()
 
+    @property
+    def cartas_para_revisar(self):
+        return self.cartas.filter(
+            vista=True,
+            proxima_revisao__lte=HOJE
+        )
+
+    @property
+    def num_cartas_para_revisar(self):
+        return self.cartas_para_revisar.count()
+    
     @property
     def cartas_para_ver(self):
         queryset = self.cartas.filter(proxima_revisao=HOJE)
@@ -55,20 +74,8 @@ class Baralho(models.Model):
     def num_cartas_para_ver(self):
         return self.num_cartas_nao_vistas.count()
     
-    @property
-    def cartas_para_revisar(self):
-        return self.cartas.filter(
-            vista=True,
-            proxima_revisao__lte=HOJE
-        )
 
-    @property
-    def num_cartas_para_revisar(self):
-        return self.cartas_para_revisar.count()
-    
-    def __str__(self):
-        return self.nome
-    
+
 
 class Carta(models.Model):
     baralho = models.ForeignKey(

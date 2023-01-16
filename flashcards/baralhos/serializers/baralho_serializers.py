@@ -32,19 +32,14 @@ class BaralhoSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault()
     )
     tags = serializers.CharField(required=False, write_only=True)
-
+    num_cartas_nao_vistas = serializers.IntegerField(read_only=True)
+    num_cartas_para_revisar = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Baralho
         fields = [
-            'usuario', 'id', 'nome', 
-            'num_cartas_nao_vistas', 
-            'num_cartas_para_revisar',
-            'tags'
-        ]
-        read_only_fields = [ 
-            'num_cartas_nao_vistas',
-            'num_cartas_para_revisar'
+            'usuario', 'id', 'nome', 'num_cartas_nao_vistas', 
+            'num_cartas_para_revisar', 'tags'
         ]
 
     def validate_tags(self, tags):
