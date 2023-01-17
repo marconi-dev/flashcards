@@ -12,7 +12,7 @@ from .serializers.carta_serializers import (
 from .serializers.baralho_serializers import (
     BaralhoDetailSerializer, BaralhoSerializer
 )
-from .models.models import Baralho, Carta
+from .models.models import Baralho, BaralhoInfoExtra, Carta
 # Create your views here.
 
 class BaralhoViewSet(ModelViewSet):
@@ -21,6 +21,10 @@ class BaralhoViewSet(ModelViewSet):
     
     def get_queryset(self):
         return Baralho.objects.listar_com_info().filter(usuario=self.request.user)
+
+    def get_object(self):
+        pk = self.kwargs.get('pk')
+        return Baralho.objects.listar_com_info().get(id=pk)
 
     def get_serializer(self, *args, **kwargs):
         if 'many' in kwargs:
@@ -37,23 +41,24 @@ class BaralhoViewSet(ModelViewSet):
                 data=self.request.data, 
                 context={"request":self.request}
             )
-        
+
         return super().get_serializer(*args, **kwargs)
 
     @action(['POST'], True, 'publicar', 'publicar-baralho')
     def publicar_baralho(self, request, *args, **kwargs):
         baralho = self.get_object()
 
-        if baralho.tags.all() is not None:
-            baralho.publico = True 
-            baralho.save()
-
+        if not baralho.tags.exists():
             return Response(
-                {'message':'Baralho criado com successo'}, 
+                {'message':'Baralhos públicos devem possuir tags'}, 
                 status.HTTP_201_CREATED
             )
+        
+        baralho.publico = True 
+        baralho.save()
+
         return Response(
-            {'message':'Baralhos públicos devem possuir tags'}, 
+            {'message':'Baralho criado com successo'}, 
             status.HTTP_201_CREATED
         )
 
@@ -63,13 +68,20 @@ class CartaViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return get_object_or_404(Carta, pk=self.kwargs['pk'])
+        return get_object_or_404(
+            Carta.objects.prefetch_related("tags")
+            .select_related("frente", "verso"),
+            pk=self.kwargs['pk']
+        )
 
     def get_queryset(self):
-        return get_list_or_404(Carta.objects.filter(
-            baralho__usuario=self.request.user,
-            baralho__id=self.kwargs['baralho_pk']
-        ))
+        return get_list_or_404(
+            Carta.objects.filter(
+                baralho__id=self.kwargs['baralho_pk'],
+                baralho__usuario=self.request.user
+            ).select_related("frente", "verso")
+            .prefetch_related("baralho", "tags")
+        )
 
     def get_serializer(self, *args, **kwargs):
         """

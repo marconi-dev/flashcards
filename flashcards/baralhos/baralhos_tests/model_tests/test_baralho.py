@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from rest_framework.test import APITestCase
 
-from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, BaralhoInfoExtra, Carta, Frente, Verso
 from cadastro_e_login.models import User
 
 class BaralhoTestCase(APITestCase):
@@ -66,6 +66,7 @@ class BaralhoTestCase(APITestCase):
             carta = Carta.objects.get(id=i)
             carta.vista = True; carta.save()
     
+        self.baralho = BaralhoInfoExtra.objects.get(id=1)
         self.assertListEqual(
             list(self.baralho.cartas_nao_vistas.values('id')),
             [{'id': i} for i in range(1, 4+1)]

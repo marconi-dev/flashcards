@@ -17,6 +17,9 @@ class BaralhoDetailSerializer(serializers.ModelSerializer):
     cartas = CartaRelation(many=True)
     tags = serializers.StringRelatedField(many=True)
     
+    num_cartas_nao_vistas = serializers.IntegerField(read_only=True)
+    num_cartas_para_revisar = serializers.IntegerField(read_only=True)
+    total_de_cartas = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Baralho

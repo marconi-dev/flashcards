@@ -1,13 +1,13 @@
 from rest_framework.permissions import BasePermission
 
-from baralhos.models.models import Baralho
+from baralhos.models.models import BaralhoInfoExtra
 
 class TerminouDeRevisar(BasePermission):
     def has_permission(self, request, view):
         if request.method != 'PUT': return True
         
         baralho_pk = view.kwargs.get('baralho_pk')
-        baralho = Baralho.objects.get(pk=baralho_pk)
+        baralho = BaralhoInfoExtra.objects.get(pk=baralho_pk)
 
         pk = view.kwargs.get('pk')
         carta_foi_vista = baralho.cartas.get(pk=pk).vista

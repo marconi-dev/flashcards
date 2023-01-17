@@ -9,7 +9,7 @@ from rest_framework.mixins import (
     ListModelMixin as LMixin, RetrieveModelMixin as RMixin
 )
 
-from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
+from baralhos.models.models import Baralho, Carta, Frente, Verso
 from mesa.serializers import (
     SimpleBaralhoSerializer, DetailBaralhoSerializer
 )
@@ -17,6 +17,10 @@ from mesa.serializers import (
 
 class MesaViewSet(LMixin, RMixin, GViewSet):
     serializer_class = DetailBaralhoSerializer
+
+    def get_object(self):
+        pk = self.kwargs.get('pk')
+        return Baralho.objects.listar_com_info().get(id=pk)
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags')

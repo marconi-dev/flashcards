@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 
 from estudos.permissions import TerminouDeRevisar
 from estudos.serializers import EstudosSerializer
-from baralhos.models.models import Baralho, Carta
+from baralhos.models.models import BaralhoInfoExtra, Carta
 # Create your views here.
 
 
@@ -29,7 +29,7 @@ class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
         primeiras cartas não vistas. 
         """
         baralho_pk = self.kwargs.get('baralho_pk')
-        baralho = Baralho.objects.get(pk=baralho_pk)
+        baralho = BaralhoInfoExtra.objects.get(pk=baralho_pk)
         cartas_para_revisar = baralho.cartas_para_revisar
         cartas_para_ver = baralho.cartas_para_ver
 

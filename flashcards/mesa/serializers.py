@@ -13,6 +13,7 @@ class DetailBaralhoSerializer(serializers.ModelSerializer):
     usuario = serializers.StringRelatedField(
         source='usuario.username'
     )
+    total_de_cartas = serializers.IntegerField()
     class Meta:
         model = Baralho
         fields = [

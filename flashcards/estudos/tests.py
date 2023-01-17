@@ -6,7 +6,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from cadastro_e_login.models import User
-from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, BaralhoInfoExtra, Carta, Frente, Verso
 # Create your tests here.
 
 class EstudosTestCase(APITestCase):
@@ -27,7 +27,7 @@ class EstudosTestCase(APITestCase):
             'nome': 'Baralho de Teste', 
             'usuario': self.user
         }
-        self.baralho = Baralho.objects.create(**baralho_info)
+        self.baralho = BaralhoInfoExtra.objects.create(**baralho_info)
         self.tag = Tag.objects.create(nome='teste')
         self.baralho.tags.add(self.tag)
         

@@ -5,7 +5,6 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from django.urls import reverse
-from django.db.models import Count, F, Q
 
 from cadastro_e_login.models import User 
 from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
@@ -24,13 +23,13 @@ class BaralhoViewListAndRetrieveTestCase(APITestCase):
 
         tags = [Tag.objects.create(nome=f"tag{i}") for i in range(20)]    
 
-        for i in range(100):
-            baralho = Baralho.objects.create(
-                usuario=self.usuario,
-                nome=f"Baralho de Teste nº: {i}",
-            )
-            baralho.tags.add(random.choice(tags))
+        baralho = Baralho.objects.create(
+            usuario=self.usuario,
+            nome="Baralho de Teste",
+        )
+        baralho.tags.add(random.choice(tags))
             
+        for i in range(100):
             Carta.objects.create(
                 baralho=baralho,
                 frente=Frente.objects.create(texto=f"Frente nº: {i}"),
@@ -39,16 +38,12 @@ class BaralhoViewListAndRetrieveTestCase(APITestCase):
                 criada=HOJE
             )
     
-    def test_110_baralhos_e_110_cartas(self):
-        self.assertEqual(Baralho.objects.count(), 100)
-        self.assertEqual(Carta.objects.count(), 100)
-
-    def test_baralho_list_view(self):
-        url = reverse('baralho-list')
-        with self.assertNumQueries(2):
+    def test_carta_list(self):
+        url = reverse('carta-list', kwargs={'baralho_pk':1})
+        with self.assertNumQueries(3):
             self.client.get(url)
     
-    def test_baralho_detail_view(self):
-        url = reverse('baralho-detail', kwargs={'pk': 1})
-        with self.assertNumQueries(6):
+    def test_carta_detail(self):
+        url = reverse('carta-detail', kwargs={"baralho_pk":1, "pk":1})
+        with self.assertNumQueries(2):
             self.client.get(url)

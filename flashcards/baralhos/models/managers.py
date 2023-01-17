@@ -25,7 +25,7 @@ class BaralhoManager(BaralhosBaseManager):
                 'cartas', filter=para_revisar
             ),
             total_de_cartas=Count('cartas')
-        )
+        ).order_by('atualizado')
 
 class CartaManager(BaralhosBaseManager):
     pass
