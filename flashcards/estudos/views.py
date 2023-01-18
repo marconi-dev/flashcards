@@ -29,7 +29,7 @@ class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
         primeiras cartas não vistas. 
         """
         baralho_pk = self.kwargs.get('baralho_pk')
-        cartas_para_revisar = Carta.objects.para_revisar(baralho_pk)
+        cartas_para_revisar = Carta.objects.para_revisar(baralho_pk)        
         cartas_para_ver = Carta.objects.para_ver(baralho_pk)
 
         if cartas_para_revisar.exists(): return cartas_para_revisar

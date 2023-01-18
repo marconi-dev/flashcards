@@ -42,12 +42,11 @@ class CartaManager(BaralhosBaseManager):
         Remarca a proxima_revisao das cartas além do limite para amanhã
         """
         limite_diario = 20
-        list_cartas_acima_do_limite = cartas[limite_diario:]
-        cartas_acima_do_limite = cartas.exclude(
-            id__in=[carta.id for carta in list_cartas_acima_do_limite]
+        lista_cartas_acima_do_limite = cartas[limite_diario:]
+        cartas_acima_do_limite = cartas.filter(
+            id__in=[carta.id for carta in lista_cartas_acima_do_limite]
         )
         cartas_acima_do_limite.update(proxima_revisao=AMANHA)
-
 
     def para_ver(self, baralho_pk):
         cartas = self.select_related("baralho", "frente", "verso"
