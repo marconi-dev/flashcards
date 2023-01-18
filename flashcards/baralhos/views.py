@@ -12,7 +12,7 @@ from .serializers.carta_serializers import (
 from .serializers.baralho_serializers import (
     BaralhoDetailSerializer, BaralhoSerializer
 )
-from .models.models import Baralho, BaralhoInfoExtra, Carta
+from .models.models import Baralho, Carta
 # Create your views here.
 
 class BaralhoViewSet(ModelViewSet):

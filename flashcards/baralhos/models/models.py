@@ -27,54 +27,6 @@ class Baralho(models.Model):
 
     def __str__(self):
         return self.nome
-    
-class BaralhoInfoExtra(Baralho):
-    class Meta:
-        proxy=True
-
-    @property
-    def total_de_cartas(self):
-        return self.cartas.count()
-
-    @property
-    def cartas_nao_vistas(self):
-        return self.cartas.filter(
-            vista=False
-        )
-    
-    @property 
-    def num_cartas_nao_vistas(self):
-        return self.cartas_nao_vistas.count()
-
-    @property
-    def cartas_para_revisar(self):
-        return self.cartas.filter(
-            vista=True,
-            proxima_revisao__lte=HOJE
-        )
-
-    @property
-    def num_cartas_para_revisar(self):
-        return self.cartas_para_revisar.count()
-    
-    @property
-    def cartas_para_ver(self):
-        queryset = self.cartas.filter(proxima_revisao=HOJE)
-        queryset = queryset.order_by('criada')
-        
-        limite_diario = 20
-        cartas_acima_do_limite_diario = queryset[limite_diario:]
-        for carta in cartas_acima_do_limite_diario:
-            carta.proxima_revisao=AMANHA
-            carta.save()
-
-        return queryset
-
-    @property
-    def num_cartas_para_ver(self):
-        return self.num_cartas_nao_vistas.count()
-    
-
 
 
 class Carta(models.Model):

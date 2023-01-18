@@ -6,7 +6,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from cadastro_e_login.models import User
-from baralhos.models.models import Tag, Baralho, BaralhoInfoExtra, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 # Create your tests here.
 
 class EstudosTestCase(APITestCase):
@@ -27,7 +27,7 @@ class EstudosTestCase(APITestCase):
             'nome': 'Baralho de Teste', 
             'usuario': self.user
         }
-        self.baralho = BaralhoInfoExtra.objects.create(**baralho_info)
+        self.baralho = Baralho.objects.create(**baralho_info)
         self.tag = Tag.objects.create(nome='teste')
         self.baralho.tags.add(self.tag)
         
@@ -84,7 +84,9 @@ class EstudosTestCase(APITestCase):
         
         response = self.client.get(self.url)
         self.assertEqual(len(response.data['results']), 20)
-        self.assertGreater(self.baralho.cartas_nao_vistas.count(), 20)
+        
+        baralho = Baralho.objects.listar_com_info().get(pk=self.baralho.pk)
+        self.assertGreater(baralho.num_cartas_nao_vistas, 20)
         
     def test_ver_nova_carta_antes_de_revisar(self):
 
@@ -108,4 +110,12 @@ class EstudosTestCase(APITestCase):
             status.HTTP_200_OK
         )
     
-    
+    #QUERIES
+    def test_estudos_list(self):
+        with self.assertNumQueries(5):
+            self.client.get(self.url)
+        
+    def test_estudos_detail(self):
+        with self.assertNumQueries(4):
+            url = reverse('estudos-detail', kwargs={'baralho_pk':1, 'pk':41})
+            self.client.get(url)

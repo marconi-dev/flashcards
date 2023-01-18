@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from rest_framework.test import APITestCase
 
-from baralhos.models.models import Tag, Baralho, BaralhoInfoExtra, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 from cadastro_e_login.models import User
 
 class BaralhoTestCase(APITestCase):
@@ -57,31 +57,3 @@ class BaralhoTestCase(APITestCase):
             self.user.baralhos.first(),
             self.baralho
         )
-
-    def test_cartas_filtradas_corretamente(self):
-        """
-        Testa se as "properties" estão funcionando como o esperado
-        """
-        for i in range(5, 10+1):
-            carta = Carta.objects.get(id=i)
-            carta.vista = True; carta.save()
-    
-        self.baralho = BaralhoInfoExtra.objects.get(id=1)
-        self.assertListEqual(
-            list(self.baralho.cartas_nao_vistas.values('id')),
-            [{'id': i} for i in range(1, 4+1)]
-        )
-
-        self.assertEqual(
-            self.baralho.num_cartas_nao_vistas, 4
-        )
-
-        self.assertListEqual(
-            list(self.baralho.cartas_para_revisar.values('id')),
-            [{'id': i} for i in range(5, 10+1)]
-        )
-
-        self.assertEqual(
-            self.baralho.num_cartas_para_revisar, 6
-        )
-       

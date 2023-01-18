@@ -1,17 +1,16 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.db.models import Count, Q
 from django.db import models
 
+DIA = timedelta(days=1)
 HOJE = date.today()
+AMANHA = HOJE + 1*DIA
+
 class BaralhosBaseManager(models.Manager):
-    def filter_by_tags(self, tags):
-        queryset = self.all()
-        for tag in tags:
-            queryset = queryset.filter(
-                tags__nome__contains=tag.lower()
-            )
-        return queryset
+    def filter_by_tags(self, tags): 
+        return self.filter(tags__nome__in=tags)
+        
 
 class BaralhoManager(BaralhosBaseManager):
     def listar_com_info(self):
@@ -28,4 +27,27 @@ class BaralhoManager(BaralhosBaseManager):
         ).order_by('atualizado')
 
 class CartaManager(BaralhosBaseManager):
-    pass
+    def para_revisar(self, baralho_pk):
+        return self.select_related("baralho", "frente", "verso").filter(vista=True, proxima_revisao__lte=HOJE, baralho=baralho_pk).order_by('criada')
+    
+
+    def __remarcar_para_amanha(self, cartas):
+        """
+        Remarca a proxima_revisao das cartas além do limite para amanhã
+        """
+        limite_diario = 20
+        list_cartas_acima_do_limite = cartas[limite_diario:]
+        cartas_acima_do_limite = cartas.exclude(
+            id__in=[carta.id for carta in list_cartas_acima_do_limite]
+        )
+        cartas_acima_do_limite.update(proxima_revisao=AMANHA)
+
+
+    def para_ver(self, baralho_pk):
+        cartas = self.select_related("baralho", "frente", "verso"
+        ).filter(vista=False, proxima_revisao__lte=HOJE, baralho=baralho_pk
+        ).order_by('criada')
+        
+        self.__remarcar_para_amanha(cartas)
+        
+        return cartas.all()
