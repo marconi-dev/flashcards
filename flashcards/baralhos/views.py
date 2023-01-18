@@ -51,7 +51,7 @@ class BaralhoViewSet(ModelViewSet):
         if not baralho.tags.exists():
             return Response(
                 {'message':'Baralhos públicos devem possuir tags'}, 
-                status.HTTP_201_CREATED
+                status.HTTP_401_UNAUTHORIZED
             )
         
         baralho.publico = True 
