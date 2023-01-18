@@ -18,7 +18,7 @@ class MesaViewTestCase(APITestCase):
             email='test@email.com',
             password='password', #Senha não criptografada
         )
-
+    
         #SEM TAG
         self.baralhos_sem_tag = [
             Baralho.objects.create(
@@ -125,7 +125,13 @@ class MesaViewTestCase(APITestCase):
         )
 
         #Clonando
-        self.client.force_authenticate(self.user)
+        user2 = self.user = User.objects.create(
+            username='Username test2',
+            email='test@email2.com',
+            password='password', #Senha não criptografada
+        )
+
+        self.client.force_authenticate(user2)
 
         url_clonar = self.url_detail + 'clonar/'
         response = self.client.post(
@@ -169,8 +175,14 @@ class MesaViewTestCase(APITestCase):
             self.client.get(self.url_detail)
 
     def test_mesa_clonar(self):
-        self.client.force_authenticate(self.user)
+        user2 = self.user = User.objects.create(
+            username='Username test2',
+            email='test@email2.com',
+            password='password', #Senha não criptografada
+        )
+
+        self.client.force_authenticate(user2)
         url_clonar = self.url_detail + 'clonar/'
         
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             self.client.post(url_clonar, format='json')

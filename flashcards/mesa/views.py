@@ -9,6 +9,7 @@ from rest_framework.mixins import (
     ListModelMixin as LMixin, RetrieveModelMixin as RMixin
 )
 
+from mesa.permissions import UsuarioNaoDono
 from baralhos.models.models import Baralho, Carta, Frente, Verso
 from mesa.serializers import (
     SimpleBaralhoSerializer, DetailBaralhoSerializer
@@ -26,6 +27,7 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags')
+        if tags: tags = tags.split(" ")
 
         return Baralho.objects.listar_para_mesa(tags)
 
@@ -71,7 +73,7 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
                     carta.tags.add(tag)
 
     @action(['POST'], url_name='clonar-baralho', url_path='clonar',
-        permission_classes=[IsAuthenticated], detail=True)
+        permission_classes=[IsAuthenticated, UsuarioNaoDono], detail=True)
     def clonar_baralho(self, request, *args, **kwargs):
         baralho = self.get_object()
         novo_baralho = Baralho.objects.create(
