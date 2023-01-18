@@ -15,6 +15,8 @@ from mesa.serializers import (
 )
 # Create your views here.
 
+HOJE = date.today()
+
 class MesaViewSet(LMixin, RMixin, GViewSet):
     serializer_class = DetailBaralhoSerializer
 
@@ -25,12 +27,7 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
     def get_queryset(self):
         tags = self.request.query_params.get('tags')
 
-        if tags is not None:
-            queryset = Baralho.objects.filter_by_tags(tags.split(' '))
-            queryset = queryset.filter(publico=True)
-            return queryset 
-
-        return Baralho.objects.filter(publico=True)
+        return Baralho.objects.listar_para_mesa(tags)
 
     def get_serializer(self, *args, **kwargs):
         
@@ -60,7 +57,7 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
             info = self.__clonar_frente_e_verso(carta)
 
             nova_carta = Carta.objects.create(
-                proxima_revisao=date.today(),
+                proxima_revisao=HOJE,
                 baralho=novo_baralho,
                 criada=carta.criada,
                 frente=info['nova_frente'],
@@ -72,11 +69,9 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
             for tag in antiga_carta.tags.iterator():
                 for carta in novas_cartas:
                     carta.tags.add(tag)
-    
-    @action(
-        ['POST'], url_name='clonar-baralho', url_path='clonar',
-        permission_classes=[IsAuthenticated], detail=True
-    )
+
+    @action(['POST'], url_name='clonar-baralho', url_path='clonar',
+        permission_classes=[IsAuthenticated], detail=True)
     def clonar_baralho(self, request, *args, **kwargs):
         baralho = self.get_object()
         novo_baralho = Baralho.objects.create(

@@ -159,3 +159,18 @@ class MesaViewTestCase(APITestCase):
         self.assertFalse(
             Baralho.objects.last().publico
         )
+
+    def test_mesa_list(self):
+        with self.assertNumQueries(3):
+            self.client.get(self.url)
+    
+    def test_mesa_detail(self):
+        with self.assertNumQueries(3):
+            self.client.get(self.url_detail)
+
+    def test_mesa_clonar(self):
+        self.client.force_authenticate(self.user)
+        url_clonar = self.url_detail + 'clonar/'
+        
+        with self.assertNumQueries(8):
+            self.client.post(url_clonar, format='json')

@@ -15,20 +15,26 @@ class BaralhosBaseManager(models.Manager):
 class BaralhoManager(BaralhosBaseManager):
     def listar_com_info(self):
         para_revisar = Q(cartas__vista=True) & Q(cartas__proxima_revisao=HOJE)
-
         return self.annotate(
-            num_cartas_nao_vistas=Count(
-                'cartas', filter=Q(cartas__vista=False)
-            ),
-            num_cartas_para_revisar=Count(
-                'cartas', filter=para_revisar
-            ),
-            total_de_cartas=Count('cartas')
+            num_cartas_nao_vistas=Count('cartas', filter=Q(cartas__vista=False)
+            ),num_cartas_para_revisar=Count('cartas', filter=para_revisar
+            ),total_de_cartas=Count('cartas')
         ).order_by('atualizado')
+
+    def listar_para_mesa(self, tags=None):
+        baralhos = self.filter(publico=True
+        ).only("id", "nome", "tags"
+        ).prefetch_related("tags")
+
+        if tags: baralhos = baralhos.filter(tags__nome__in=tags)
+        
+        return baralhos
 
 class CartaManager(BaralhosBaseManager):
     def para_revisar(self, baralho_pk):
-        return self.select_related("baralho", "frente", "verso").filter(vista=True, proxima_revisao__lte=HOJE, baralho=baralho_pk).order_by('criada')
+        return self.select_related("baralho", "frente", "verso"
+        ).filter(vista=True, proxima_revisao__lte=HOJE, baralho=baralho_pk
+        ).order_by('criada')
     
 
     def __remarcar_para_amanha(self, cartas):
