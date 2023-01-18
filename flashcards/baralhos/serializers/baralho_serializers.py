@@ -45,6 +45,7 @@ class BaralhoSerializer(serializers.ModelSerializer):
             'num_cartas_para_revisar', 'tags'
         ]
 
+
     def validate_tags(self, tags):
         try: return tags.lstrip().strip().lower().split(' ')
         except:
@@ -52,6 +53,7 @@ class BaralhoSerializer(serializers.ModelSerializer):
                 'Tags devem ser separadas por espaço em branco'
             )
     
+
     def __add_tags(self, tags, baralho):
         """
         Adiciona tags à carta. Se necessário cria a tag.
@@ -60,15 +62,24 @@ class BaralhoSerializer(serializers.ModelSerializer):
             tag = Tag.objects.get_or_create(nome=nome)
             baralho.tags.add(tag[0])
 
+
     def create(self, data):
         if 'tags' in data: 
             tags = data.pop('tags')
             baralho = Baralho.objects.create(**data)
             self.__add_tags(tags, baralho)
             return baralho
+
+        return Baralho.objects.create(**data)    
+
+    def update(self, baralho, data):
+        baralho.nome = data.get('nome', baralho.nome)
         
-        return Baralho.objects.create(**data) 
-        
+        if 'tags' in data: self.__add_tags(data['tags'], baralho)
+
+        baralho.save()
+        return baralho
+
         
 
         

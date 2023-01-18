@@ -110,3 +110,34 @@ class BaralhoViewTestCase(APITestCase):
         self.assertTrue(
             Baralho.objects.get(id=1).publico
         )
+    
+    def test_add_tags_ao_baralho(self):
+        data = {
+            'tags':"nova_tag nova_tag2 nova_tag2"
+        }
+        
+        response = self.client.patch(self.url_detail, data, format='json')
+        
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(self.baralho.tags.count(), 3)
+    
+    def test_editar_nome_do_baralho(self):
+        data = {
+            'nome':"novo nome do baralho"
+        }
+        
+        response = self.client.patch(self.url_detail, data, format='json')
+        
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        baralho = Baralho.objects.get(pk=1)
+        self.assertEqual(
+            baralho.nome, 'novo nome do baralho'
+        )
