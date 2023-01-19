@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from django.urls import reverse
@@ -58,6 +59,45 @@ class BaralhoViewTestCase(APITestCase):
                 }]
             }
         )
+
+    def _make_query_request(self, query):
+        response = self.client.get(self.url, QUERY_STRING='tags='+query)
+        response.render()
+        json_body = json.loads(response.content)
+        results = json_body['results']
+
+        return {'results': results, 'status': response.status_code}
+
+    def test_baralhos_get_com_filtro(self):
+        tags = [
+            Tag.objects.create(nome='tag_generica'),
+            Tag.objects.create(nome='uma_tag_bem_especifica')
+        ]
+        baralho = Baralho.objects.create(
+            usuario=self.usuario, nome='Uma baralho')
+        baralho2 = Baralho.objects.create(
+            usuario=self.usuario, nome='Uma baralho')
+        
+        baralho.tags.add(tags[0])
+        baralho2.tags.add(tags[1])
+
+
+        req_sem_tags=self._make_query_request(' ')
+        self.assertEqual(req_sem_tags['status'], status.HTTP_200_OK)
+        self.assertEqual(len(req_sem_tags['results']), 3)
+
+        req_com_tag_vazia=self._make_query_request('teste123321abc')
+        self.assertEqual(req_com_tag_vazia['status'], status.HTTP_200_OK)
+        self.assertEqual(len(req_com_tag_vazia['results']), 0)
+
+        req_com_2_tags=self._make_query_request('tag_generica teste')
+        self.assertEqual(req_com_2_tags['status'], status.HTTP_200_OK)
+        self.assertEqual(len(req_com_2_tags['results']), 2)
+
+        req_com_3_tags=self._make_query_request(
+            'tag_generica test uma_tag_bem_especifica')
+        self.assertTrue(req_com_3_tags['status'], status.HTTP_200_OK)
+        self.assertTrue(req_com_3_tags['results'], 4)
 
     def test_baralhos_post(self):
         data = {

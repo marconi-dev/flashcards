@@ -8,28 +8,37 @@ HOJE = date.today()
 AMANHA = HOJE + 1*DIA
 
 class BaralhosBaseManager(models.Manager):
-    def filter_by_tags(self, tags): 
-        return self.filter(tags__nome__in=tags)
-        
+    def _tags_is_valid(self, tags):
+        if tags is None: return False
+        if tags == '': return False
+        if tags.replace(' ', '') == '': return False
+        return True
+
+
+    def filter_by_tags(self, tags):
+        if self._tags_is_valid(tags):
+            tags = tags.split(" ")
+            return self.filter(tags__nome__in=tags)
+        return self
 
 class BaralhoManager(BaralhosBaseManager):
-    def listar_com_info(self):
-        para_revisar = Q(cartas__vista=True) & Q(cartas__proxima_revisao=HOJE)
-        return self.annotate(
+    def listar_com_info(self, tags=None):
+        PARA_REVISAR = Q(cartas__vista=True) & Q(cartas__proxima_revisao=HOJE)
+        
+        return self.filter_by_tags(tags
+            ).annotate(
             num_cartas_nao_vistas=Count('cartas', filter=Q(cartas__vista=False)
-            ),num_cartas_para_revisar=Count('cartas', filter=para_revisar
+            ),num_cartas_para_revisar=Count('cartas', filter=PARA_REVISAR
             ),total_de_cartas=Count('cartas')
         ).order_by('atualizado')
 
+
     def listar_para_mesa(self, tags=None):
-        baralhos = self.filter(publico=True
+        return self.filter_by_tags(tags
+        ).filter(publico=True
         ).only("id", "nome", "tags"
         ).prefetch_related("tags")
-
-        if tags: baralhos = baralhos.filter(tags__nome__in=tags)
         
-        return baralhos
-
 class CartaManager(BaralhosBaseManager):
     def para_revisar(self, baralho_pk):
         return self.select_related("baralho", "frente", "verso"

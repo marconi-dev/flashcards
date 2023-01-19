@@ -9,6 +9,8 @@ from rest_framework.mixins import (
     ListModelMixin as LMixin, RetrieveModelMixin as RMixin
 )
 
+from django.core.cache import cache
+
 from mesa.permissions import UsuarioNaoDono
 from baralhos.models.models import Baralho, Carta, Frente, Verso
 from mesa.serializers import (
@@ -25,16 +27,26 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
         pk = self.kwargs.get('pk')
         return Baralho.objects.listar_com_info().get(id=pk)
 
+    def get_cached_queryset(self):
+        queryset = cache.get('mesa_list_queryset')
+        if queryset is None:
+            queryset = Baralho.objects.listar_para_mesa()
+            cache.set('mesa_list_queryset', queryset, 5 * 60)
+
+        return queryset
+
     def get_queryset(self):
         tags = self.request.query_params.get('tags')
-        if tags: tags = tags.split(" ")
 
-        return Baralho.objects.listar_para_mesa(tags)
+        if tags is not None: 
+            return Baralho.objects.listar_para_mesa(tags)
+
+        return self.get_cached_queryset()
+
+
 
     def get_serializer(self, *args, **kwargs):
-        
-        if 'many' in kwargs:
-            return SimpleBaralhoSerializer(*args, many=True)
+        if 'many' in kwargs: return SimpleBaralhoSerializer(*args, many=True)
 
         return super().get_serializer(*args, **kwargs)
 

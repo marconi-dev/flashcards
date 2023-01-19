@@ -96,11 +96,29 @@ if DEBUG:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+    }
+
 else:
     DATABASE_URL = os.getenv('DATABASE_URL')
     DATABASES = {
     "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=1800),
-}
+    }
+
+    CACHES = {
+            'default': {
+                'BACKEND': 'django_redis.cache.RedisCache',
+                'LOCATION': os.getenv('REDIS_URL'),
+                'OPTIONS': {
+                    'CLIENT_CLASS': 'django_redis.client.DefaultClient'
+                },
+                'KEY_PREFIX': 'flashcards'
+            }
+        }
 
 
 # Password validation

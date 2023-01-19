@@ -18,9 +18,14 @@ from .models.models import Baralho, Carta
 class BaralhoViewSet(ModelViewSet):
     serializer_class = BaralhoSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        return Baralho.objects.listar_com_info().filter(usuario=self.request.user)
+        tags = self.request.query_params.get('tags')
+        usuario = self.request.user
+
+        return Baralho.objects.listar_com_info(
+        tags).filter(usuario=usuario)
+
 
     def get_object(self):
         pk = self.kwargs.get('pk')
