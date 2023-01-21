@@ -49,6 +49,9 @@ class BaralhoViewSet(ModelViewSet):
 
         return super().get_serializer(*args, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     @action(['POST'], True, 'publicar', 'publicar-baralho')
     def publicar_baralho(self, request, *args, **kwargs):
         baralho = self.get_object()

@@ -48,7 +48,4 @@ class BaralhoViewListAndRetrieveTestCase(APITestCase):
         with self.assertNumQueries(2):
             self.client.get(url)
     
-    def test_baralho_detail_view(self):
-        url = reverse('baralho-detail', kwargs={'pk': 1})
-        with self.assertNumQueries(6):
-            self.client.get(url)
+    
