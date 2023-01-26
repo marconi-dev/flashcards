@@ -175,14 +175,46 @@ class MesaViewTestCase(APITestCase):
             self.client.get(self.url_detail)
 
     def test_mesa_clonar(self):
-        user2 = self.user = User.objects.create(
+        user2 = User.objects.create(
+            username='Username test2',
+            email='test@email2.com',
+            password='password', #Senha não criptografada
+        )
+        self.client.force_authenticate(user2)
+        url_clonar = self.url_detail + 'clonar/'
+        
+        with self.assertNumQueries(9):
+            self.client.post(url_clonar, format='json')
+    
+    def test_mesa_clonar_baralho_grande(self):
+        baralho = Baralho.objects.create(
+            usuario=self.user,
+            nome='Meu baralho',
+            publico=True
+        )
+
+        cartas = [
+            Carta.objects.create(
+                baralho=baralho,
+                frente=Frente.objects.create(
+                    texto=f'Texto da frente {i}'
+                ),
+                verso=Verso.objects.create(
+                    texto=f'Texto do verso {i}'
+                ),
+                proxima_revisao=date.today(),
+                criada=date.today()
+            ) for i in range(100)
+        ]
+        user2 = User.objects.create(
             username='Username test2',
             email='test@email2.com',
             password='password', #Senha não criptografada
         )
 
         self.client.force_authenticate(user2)
-        url_clonar = self.url_detail + 'clonar/'
-        
-        with self.assertNumQueries(9):
-            self.client.post(url_clonar, format='json')
+        url_clonar = reverse('mesa-detail', kwargs={'pk':41}) + 'clonar/'
+        with self.assertNumQueries(10):
+            response = self.client.post(url_clonar, format='json')
+            print(response.status_code)
+    

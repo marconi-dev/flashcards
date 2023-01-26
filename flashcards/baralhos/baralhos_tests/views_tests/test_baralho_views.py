@@ -128,7 +128,7 @@ class BaralhoViewTestCase(APITestCase):
         response = self.client.get(self.url_detail)
         self.assertEqual(
             response.status_code,
-            status.HTTP_405_METHOD_NOT_ALLOWED
+            status.HTTP_404_NOT_FOUND
         )
 
     def test_baralhos_delete(self):

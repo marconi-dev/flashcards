@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from .serializers.carta_serializers import (
@@ -50,7 +51,7 @@ class BaralhoViewSet(ModelViewSet):
         return super().get_serializer(*args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return HttpResponseNotFound()
 
     @action(['POST'], True, 'publicar', 'publicar-baralho')
     def publicar_baralho(self, request, *args, **kwargs):

@@ -9,10 +9,11 @@ from rest_framework.mixins import (
     ListModelMixin as LMixin, RetrieveModelMixin as RMixin
 )
 
+from django.db import connection
 from django.core.cache import cache
 
 from mesa.permissions import UsuarioNaoDono
-from baralhos.models.models import Baralho, Carta, Frente, Verso
+from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 from mesa.serializers import (
     SimpleBaralhoSerializer, DetailBaralhoSerializer
 )
@@ -52,49 +53,76 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
 
 
 
-    def __clonar_frente_e_verso(self, carta):
-        return {
-            'nova_frente': Frente.objects.create(
-                imagem=carta.frente.imagem,
+    def __clonar_frente_e_verso(self, cartas):
+        ultimas_index = cartas.count()
+        versos, frentes = list(), list()
+
+        for carta in cartas.iterator():
+            frentes.append(Frente(
                 texto=carta.frente.texto
-        ),
-            'novo_verso': Verso.objects.create(
+            ))
+            versos.append(Verso(
                 texto=carta.verso.texto
-        )
-        }
+            ))
+
+        Frente.objects.bulk_create(frentes)
+        Verso.objects.bulk_create(versos)
+
+        frentes = Frente.objects.only('id').order_by('id'
+        ).reverse()[:ultimas_index]
+        versos = Verso.objects.only('id').order_by('id'
+        ).reverse()[:ultimas_index]
         
+        return {'frentes': frentes, 'versos': versos}
+        
+
+
     def __clonar_cartas(self, novo_baralho):
         baralho = self.get_object()
+        cartas = Carta.objects.select_related('baralho', 'frente', 'verso').filter(baralho=baralho).order_by('criada')
+        id_dict = self.__clonar_frente_e_verso(cartas)
+
         novas_cartas = list()
 
-        for carta in baralho.cartas.iterator():
-            info = self.__clonar_frente_e_verso(carta)
+        for i, carta in enumerate(reversed(cartas)):
 
-            nova_carta = Carta.objects.create(
+            novas_cartas.append(Carta(
                 proxima_revisao=HOJE,
                 baralho=novo_baralho,
                 criada=carta.criada,
-                frente=info['nova_frente'],
-                verso=info['novo_verso'],
-            )
-            novas_cartas.append(nova_carta)
-
-        for antiga_carta in baralho.cartas.iterator():
-            for tag in antiga_carta.tags.iterator():
-                for carta in novas_cartas:
-                    carta.tags.add(tag)
-
-    @action(['POST'], url_name='clonar-baralho', url_path='clonar',
-        permission_classes=[IsAuthenticated, UsuarioNaoDono], detail=True)
-    def clonar_baralho(self, request, *args, **kwargs):
-        baralho = self.get_object()
+                frente=id_dict['frentes'][i],
+                verso=id_dict['versos'][i],
+            ))
+        Carta.objects.bulk_create(novas_cartas)
+        
+        
+        
+    def __gerar_novo_baralho(self, baralho):
         novo_baralho = Baralho.objects.create(
             usuario=self.request.user,
             nome=baralho.nome
         )
-        for tag in baralho.tags.iterator():
-            novo_baralho.tags.add(tag)
+        return novo_baralho
+    
+    def __clonar_tags(self, tags, model):
+        model.tags.add(*tags)
 
+
+    @action(
+        methods=['POST'], 
+        url_name='clonar-baralho', 
+        url_path='clonar',
+        permission_classes=[
+            IsAuthenticated, UsuarioNaoDono
+        ], 
+        detail=True
+    )
+    def clonar_baralho(self, request, *args, **kwargs):
+        baralho = self.get_object()
+        tags = Tag.objects.filter(baralho=baralho)
+        novo_baralho = self.__gerar_novo_baralho(baralho)
+
+        self.__clonar_tags(tags, novo_baralho)
         self.__clonar_cartas(novo_baralho)
         return Response(
             {'message':'baralho clonado com successo'},
