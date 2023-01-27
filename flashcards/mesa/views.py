@@ -74,8 +74,6 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
         ).reverse()[:ultimas_index]
         
         return {'frentes': frentes, 'versos': versos}
-        
-
 
     def __clonar_cartas(self, novo_baralho):
         baralho = self.get_object()
@@ -93,9 +91,7 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
                 frente=id_dict['frentes'][i],
                 verso=id_dict['versos'][i],
             ))
-        Carta.objects.bulk_create(novas_cartas)
-        
-        
+        Carta.objects.bulk_create(novas_cartas)      
         
     def __gerar_novo_baralho(self, baralho):
         novo_baralho = Baralho.objects.create(
@@ -107,7 +103,6 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
     def __clonar_tags(self, tags, model):
         model.tags.add(*tags)
 
-
     @action(
         methods=['POST'], 
         url_name='clonar-baralho', 
@@ -118,6 +113,10 @@ class MesaViewSet(LMixin, RMixin, GViewSet):
         detail=True
     )
     def clonar_baralho(self, request, *args, **kwargs):
+        return Response(
+            {'message': 'Este serviço está em manutenção'}, 
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
         baralho = self.get_object()
         tags = Tag.objects.filter(baralho=baralho)
         novo_baralho = self.__gerar_novo_baralho(baralho)

@@ -96,74 +96,19 @@ class MesaViewTestCase(APITestCase):
         )
 
     def test_clonar_baralho(self):
-        #antes de clonar
-        baralho = Baralho.objects.get(id=40)
-        cartas = [
-            Carta.objects.create(
-                baralho=baralho,
-                frente = Frente.objects.create(
-                    texto='Texto da frente de uma carta'
-                ),
-                verso = Verso.objects.create(
-                    texto='Texto do verso de uma carta'
-                ),
-                vista=True,
-                criada=date.today() - timedelta(days=30),
-                proxima_revisao=date.today()
-            ) for i in range(3)
-        ]
-                
-        nome = 'Baralho de teste 10'
-        self.assertEqual(
-            Baralho.objects.filter(nome=nome).count(), 2
-        )
-        self.assertEqual(
-            Carta.objects.count(), 3
-        )
-        self.assertEqual(
-            Carta.objects.filter(vista=True).count(), 3
-        )
-
-        #Clonando
-        user2 = self.user = User.objects.create(
-            username='Username test2',
-            email='test@email2.com',
+        data = {}
+        user2 = User.objects.create(
+            username='Username2 test',
+            email='test2@email.com',
             password='password', #Senha não criptografada
         )
-
         self.client.force_authenticate(user2)
-
-        url_clonar = self.url_detail + 'clonar/'
-        response = self.client.post(
-            url_clonar, format='json'
-        )
-
-        self.assertEqual( 
-            response.status_code, 
-            status.HTTP_201_CREATED
-        )
-
-        #Após clonar
+        url_clonar = reverse('mesa-clonar-baralho', kwargs={'pk':40})
+        response = self.client.post(url_clonar, data, format='json')
+        
         self.assertEqual(
-            #Após clonar o número total de baralhos deve aumentar em 1.
-            Baralho.objects.filter(nome=nome).count(), 2+1
-        )
-        self.assertEqual(
-            #Apenas um baralho possui cartas, ao clonar este baralho
-            #com sucesso o total de cartas deve dobrar.
-            Carta.objects.count(), 3 * 2
-        )
-        self.assertEqual(
-            #Cartas novas devem ter vista=False
-            Carta.objects.filter(vista=True).count(), 3
-        )
-        self.assertEqual(
-            #O valor de "criada" deve ser de 30 dias atrás. 
-            #As cartas clonadas tem a mesma data de criação.
-            cartas[0].criada, Carta.objects.last().criada
-        )
-        self.assertFalse(
-            Baralho.objects.last().publico
+            response.status_code,
+            status.HTTP_503_SERVICE_UNAVAILABLE
         )
 
     def test_mesa_list(self):
@@ -183,7 +128,7 @@ class MesaViewTestCase(APITestCase):
         self.client.force_authenticate(user2)
         url_clonar = self.url_detail + 'clonar/'
         
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(1):
             self.client.post(url_clonar, format='json')
     
     def test_mesa_clonar_baralho_grande(self):
@@ -214,7 +159,6 @@ class MesaViewTestCase(APITestCase):
 
         self.client.force_authenticate(user2)
         url_clonar = reverse('mesa-detail', kwargs={'pk':41}) + 'clonar/'
-        with self.assertNumQueries(10):
-            response = self.client.post(url_clonar, format='json')
-            print(response.status_code)
+        with self.assertNumQueries(1):
+            self.client.post(url_clonar, format='json')
     
