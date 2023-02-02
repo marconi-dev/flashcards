@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -8,10 +8,9 @@ from django.urls import reverse
 from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 from cadastro_e_login.models import User 
 
+HOJE = str(date.today())
 class CartaViewTestCase(APITestCase):
     def setUp(self):
-        h = date.today()
-        self.hoje = f"{h.year}-0{h.month}-{h.day}"
         
         kwargs = {
             'baralho_pk': 1,
@@ -55,12 +54,12 @@ class CartaViewTestCase(APITestCase):
         expected_data = [{
             'id': 1, 'frente': 'Texto da frente 1', 
             'verso': 'Texto do verso 1', 'nivel': 1, 
-            'imagem': None, 'proxima_revisao': self.hoje, 
+            'imagem': None, 'proxima_revisao': HOJE, 
             'tags': ['idiomas'], 'vista': False
         }, {
             'id': 10, 'frente': 'Texto da frente 10', 
             'verso': 'Texto do verso 10', 'nivel': 1, 
-            'imagem': None, 'proxima_revisao': self.hoje, 
+            'imagem': None, 'proxima_revisao': HOJE, 
             'tags': ['idiomas'], 'vista': False
         }]
         
@@ -127,7 +126,7 @@ class CartaViewTestCase(APITestCase):
             'verso': 'Texto do verso 1',
             'nivel': 1,
             'imagem': None,
-            'proxima_revisao': self.hoje,
+            'proxima_revisao': HOJE,
             'tags': ['idiomas'],
             'vista': False
         }
