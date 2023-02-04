@@ -2,6 +2,9 @@
 Uma REST API feita usando Django / Django REST Framework, PostGres como banco de dados relacional, Redis como banco de dados para Cache.
 <hr>
 
+### Documentação completa:
+* https://documenter.getpostman.com/view/25630359/2s935mqPbn
+
 ## API Endpoints
 Usuário e Autenticação: 
 * `POST /api/conta/`: Registra um novo usuario
