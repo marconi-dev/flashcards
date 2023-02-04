@@ -147,15 +147,10 @@ class CartaViewTestCase(APITestCase):
             status.HTTP_404_NOT_FOUND
         )
 
-    def test_carta_detail_put(self):
-        data = {
-            'frente': 'Editado',
-        }
-        response = self.client.put(self.url_detail, data, format='json')
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK
-        )
+    def test_carta_detail_patch(self):
+        data = {'frente': 'Editado'}
+        response = self.client.patch(self.url_detail, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_carta_detail_delete(self):
         response = self.client.delete(self.url_detail)

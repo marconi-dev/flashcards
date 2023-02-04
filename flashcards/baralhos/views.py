@@ -8,11 +8,9 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from .serializers.carta_serializers import (
-    CartaSerializer, CartaCreateSerializer
-)
+    CartaSerializer, CartaCreateSerializer)
 from .serializers.baralho_serializers import (
-    BaralhoDetailSerializer, BaralhoSerializer
-)
+    BaralhoDetailSerializer, BaralhoSerializer)
 from .models.models import Baralho, Carta
 # Create your views here.
 
@@ -22,11 +20,16 @@ class BaralhoViewSet(ModelViewSet):
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags')
+        nome = self.request.query_params.get('nome')
         usuario = self.request.user
 
-        return Baralho.objects.listar_com_info(
+        queryset = Baralho.objects.listar_com_info(
         tags).filter(usuario=usuario)
 
+        if nome is not None:
+            queryset = queryset.filter(nome__icontains=nome)
+
+        return queryset
 
     def get_object(self):
         pk = self.kwargs.get('pk')
@@ -37,16 +40,13 @@ class BaralhoViewSet(ModelViewSet):
             return super().get_serializer(*args, **kwargs)
 
         if self.request.method == 'GET':
-            return BaralhoDetailSerializer(
-                self.get_object()
-            )
+            baralho = self.get_object()
+            return BaralhoDetailSerializer(baralho)
 
         if self.request.method == 'POST':
-            
             return BaralhoSerializer(
                 data=self.request.data, 
-                context={"request":self.request}
-            )
+                context={"request":self.request})
 
         return super().get_serializer(*args, **kwargs)
 
@@ -60,16 +60,13 @@ class BaralhoViewSet(ModelViewSet):
         if not baralho.tags.exists():
             return Response(
                 {'message':'Baralhos públicos devem possuir tags'}, 
-                status.HTTP_401_UNAUTHORIZED
-            )
+                status.HTTP_401_UNAUTHORIZED)
         
         baralho.publico = True 
         baralho.save()
-
         return Response(
-            {'message':'Baralho criado com successo'}, 
-            status.HTTP_201_CREATED
-        )
+            {'message':'Baralho publicado com successo'}, 
+            status.HTTP_201_CREATED)
 
 
 class CartaViewSet(ModelViewSet):
@@ -77,21 +74,20 @@ class CartaViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return get_object_or_404(
-            Carta.objects.prefetch_related("tags")
-            .select_related("frente", "verso"),
-            pk=self.kwargs['pk']
-        )
+        pk = self.kwargs.get('pk')
+        carta = Carta.objects.prefetch_related('tags')
+        carta = carta.select_related('frente', 'verso')
+        return get_object_or_404(carta, pk=pk)
 
     def get_queryset(self):
-        return get_list_or_404(
-            Carta.objects.filter(
-                baralho__id=self.kwargs['baralho_pk'],
-                baralho__usuario=self.request.user
-            ).select_related("frente", "verso")
-            .prefetch_related("baralho", "tags")
-        )
-
+        kwargs = {
+            'baralho__id': self.kwargs.get('baralho_pk'),
+            'baralho__usuario': self.request.user}
+        queryset = Carta.objects.filter(**kwargs)
+        queryset = queryset.select_related('frente', 'verso')
+        queryset = queryset.prefetch_related('baralho', 'tags')
+        return get_list_or_404(queryset)
+        
     def get_serializer(self, *args, **kwargs):
         """
         Modifica o serializer com base no método http, para melhor entendimento leia 
@@ -100,11 +96,10 @@ class CartaViewSet(ModelViewSet):
         """
         if self.request.method == 'POST':
             return CartaCreateSerializer(
-                data=kwargs['data'], context={**self.kwargs}
-        )
+                data=kwargs['data'], context={**self.kwargs})
 
-        if self.request.method == 'PUT':
+        if self.request.method == 'PATCH':
             return CartaCreateSerializer(
-                *args, data=kwargs['data'], partial=True
-            )
+                *args, data=kwargs['data'], partial=True)
+
         return super().get_serializer(*args, **kwargs)

@@ -13,41 +13,39 @@ class CartaCreateSerializer(serializers.Serializer):
     def validate_tags(self, tags: str):
         try: return tags.lstrip().strip().lower().split(' ')
         except: raise serializers.ValidationError(
-                'Tags devem ser separadas por espaço em branco'
-            )
+                'Tags devem ser separadas por espaço em branco')
 
     def validate(self, attrs):
-        if not 'frente' in attrs and not 'frente_img' in attrs:
+        if (not 'frente' in attrs and 
+            not 'frente_img' in attrs):
             raise serializers.ValidationError(
-                'A frente deve possuir ao menos um texto ou uma imagem'
-            ) 
+                'A frente deve possuir ao menos um texto ou uma imagem') 
         return attrs
-
 
     def __set_frente_info(self, data):
         """
         Define as informações da instancia (Frente) que será 
         utilizada na carta.
         """
-        frente = dict()
+        frente = dict()        
         
-        if 'frente_img' in data:
-            frente['imagem'] = data['frente_img']
-        
-        elif 'frente' in data.keys():
-            frente['texto'] = data['frente']
+        if 'frente_img' in data: frente['imagem'] = data['frente_img']
+        elif 'frente' in data: frente['texto'] = data['frente']
         
         return frente
     
     def __set_carta(self, data):
         baralho_pk = self.context['baralho_pk']
         frente_info = self.__set_frente_info(data)
+    
         carta = Carta()
         carta.frente = Frente.objects.create(**frente_info)
         carta.verso = Verso.objects.create(texto=data['verso'])
         carta.baralho = Baralho.objects.get(pk=baralho_pk)
         carta.proxima_revisao = date.today()
         carta.criada = date.today()
+        carta.save()
+
         return carta
         
     def __add_tags(self, data, carta):
@@ -55,16 +53,14 @@ class CartaCreateSerializer(serializers.Serializer):
         Adiciona tags à carta. Se necessário cria a tag.
         """
         for nome in data['tags']:
-            tag = Tag.objects.get_or_create(nome=nome)
-            carta.tags.add(tag[0])
+            tag = Tag.objects.get_or_create(nome=nome)[0]
+            carta.tags.add(tag)
 
     def create(self, data):
-        carta = self.__set_carta(data)
-        carta.save()
-
-        if 'tags' in data:
-            self.__add_tags(data, carta)
-
+        carta = self.__set_carta(data)        
+        
+        if 'tags' in data: self.__add_tags(data, carta)
+        
         return carta
 
     def update(self, carta, data):
@@ -72,7 +68,7 @@ class CartaCreateSerializer(serializers.Serializer):
         carta.frente.frente_img = data.get('frente_img', carta.frente.imagem) 
         carta.verso.texto = data.get('verso', carta.verso.texto)
         carta.save()
-        return carta 
+        return carta
 
 
 class CartaSerializer(serializers.ModelSerializer):
@@ -87,4 +83,3 @@ class CartaSerializer(serializers.ModelSerializer):
             'id', 'frente', 'verso', 'nivel', 'imagem', 
             'proxima_revisao', 'tags', 'vista',
         ]
-    
