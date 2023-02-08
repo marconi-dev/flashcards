@@ -57,16 +57,15 @@ class BaralhoViewTestCase(APITestCase):
                     'id': 1,
                     'nome': 'Baralho de teste',
                     'num_cartas_nao_vistas': 1,
-                    'num_cartas_para_revisar': 1
+                    'num_cartas_para_revisar': 1,
+                    'total_de_cartas': 2,
                 }]
             }
         )
 
     def _make_query_request(self, query):
         response = self.client.get(self.url, QUERY_STRING=query)
-        response.render()
-        json_body = json.loads(response.content)
-        results = json_body['results']
+        results = response.data['results']
         return {'results': results, 'status': response.status_code}
 
     def test_baralhos_get_com_filtro(self):

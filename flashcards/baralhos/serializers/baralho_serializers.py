@@ -31,18 +31,17 @@ class BaralhoDetailSerializer(serializers.ModelSerializer):
 
 
 class BaralhoSerializer(serializers.ModelSerializer):
-    usuario = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
+    usuario = serializers.HiddenField(default=serializers.CurrentUserDefault())
     tags = serializers.CharField(required=False, write_only=True)
     num_cartas_nao_vistas = serializers.IntegerField(read_only=True)
     num_cartas_para_revisar = serializers.IntegerField(read_only=True)
+    total_de_cartas = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Baralho
         fields = [
             'usuario', 'id', 'nome', 'num_cartas_nao_vistas', 
-            'num_cartas_para_revisar', 'tags'
+            'num_cartas_para_revisar', 'tags', 'total_de_cartas'
         ]
 
 
