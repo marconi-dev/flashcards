@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 from django.urls import reverse
@@ -79,7 +78,7 @@ class BaralhoViewTestCase(APITestCase):
             Baralho.objects.create(
                 usuario=self.usuario, nome='Uma Baralho')
         ]
-        [baralhos[i].tags.add(tags[i]) for i in range (2)]
+        [baralhos[i].tags.add(tags[i]) for i in range(2)]
 
         #Request com espaço vazio como tags...
         req_sem_tags=self._make_query_request('tags= ')

@@ -18,17 +18,19 @@ class BaralhoViewSet(ModelViewSet):
     serializer_class = BaralhoSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        tags = self.request.query_params.get('tags')
+    def apply_filtering(self, qs):
         nome = self.request.query_params.get('nome')
         usuario = self.request.user
 
-        queryset = Baralho.objects.listar_com_info(
-        tags).filter(usuario=usuario)
+        if nome is not None: 
+            qs = qs.filter(nome__icontains=nome)
 
-        if nome is not None:
-            queryset = queryset.filter(nome__icontains=nome)
+        return qs.filter(usuario=usuario)
 
+    def get_queryset(self):
+        tags = self.request.query_params.get('tags')
+        queryset = Baralho.objects.listar_com_info(tags)
+        queryset = self.apply_filtering(queryset)
         return queryset
 
     def get_object(self):
@@ -45,9 +47,8 @@ class BaralhoViewSet(ModelViewSet):
 
         if self.request.method == 'POST':
             return BaralhoSerializer(
-                data=self.request.data, 
-                context={"request":self.request})
-
+                data=self.request.data, context={"request":self.request})
+        
         return super().get_serializer(*args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
@@ -82,7 +83,8 @@ class CartaViewSet(ModelViewSet):
     def get_queryset(self):
         kwargs = {
             'baralho__id': self.kwargs.get('baralho_pk'),
-            'baralho__usuario': self.request.user}
+            'baralho__usuario': self.request.user
+        }
         queryset = Carta.objects.filter(**kwargs)
         queryset = queryset.select_related('frente', 'verso')
         queryset = queryset.prefetch_related('baralho', 'tags')
@@ -90,9 +92,10 @@ class CartaViewSet(ModelViewSet):
         
     def get_serializer(self, *args, **kwargs):
         """
-        Modifica o serializer com base no método http, para melhor entendimento leia 
-        rest_framework.mixins retrieve, update, post. O método delete não usa nenhum
-        serializer, e o get é o serializer padrão.
+        Modifica o serializer com base no método http, para melhor
+        entendimento leia rest_framework.mixins retrieve, update, post.
+        O método delete não usa nenhum serializer, e o get é o serializer
+        padrão.
         """
         if self.request.method == 'POST':
             return CartaCreateSerializer(
