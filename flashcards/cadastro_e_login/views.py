@@ -5,7 +5,6 @@ from rest_framework import status
 from .serializers import UserCreateSerializer
 
 
-
 # Create your views here.
 @api_view(['POST'])
 def user_apiview(request, *args, **kwargs):
@@ -16,5 +15,3 @@ def user_apiview(request, *args, **kwargs):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    
