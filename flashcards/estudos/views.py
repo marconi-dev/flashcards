@@ -15,9 +15,9 @@ from django.shortcuts import get_object_or_404
 from estudos.permissions import TerminouDeRevisar
 from estudos.serializers import EstudosSerializer
 from baralhos.models.models import Carta
+
+
 # Create your views here.
-
-
 HOJE = date.today()
 class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
     serializer_class = EstudosSerializer
@@ -36,25 +36,20 @@ class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
         
         return cartas_para_ver
 
-
-
     def update(self, request, *args, **kwargs):
         """
         Performa a ação de estudar uma carta.
         """
         pk = self.kwargs.get('pk')
         status_da_carta = request.data.get('status')
-
-        carta = get_object_or_404(
-            Carta.objects.filter(pk=pk, proxima_revisao__lte=HOJE)
-        )
+        
+        carta_filter = Carta.objects.filter(proxima_revisao__lte=HOJE)
+        carta = get_object_or_404(carta_filter, pk=pk)
         
         if status_da_carta is None:        
             return Response(
                 {"message":"Não foi informado um status de estudo"}, 
-                status.HTTP_400_BAD_REQUEST
-            )
+                status.HTTP_400_BAD_REQUEST)
         
         carta.estudar(status_da_carta)
         return Response({'message':'ok'}, status.HTTP_200_OK)
-        
