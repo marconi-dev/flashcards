@@ -10,6 +10,7 @@ from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso
 
 class MesaViewTestCase(APITestCase):
     def setUp(self):
+        #URLs
         self.url = reverse('mesa-list')
         self.url_detail = reverse('mesa-detail', kwargs={'pk':40})
 
@@ -25,8 +26,7 @@ class MesaViewTestCase(APITestCase):
                 usuario=self.user,
                 nome=f'Baralho de teste {i}',
                 publico=True,
-            ) for i in range(1, 10+1)
-        ]
+            ) for i in range(1, 10+1)]
 
         #IDIOMAS
         tag_idiomas = Tag.objects.create(nome='idiomas')
@@ -35,8 +35,7 @@ class MesaViewTestCase(APITestCase):
                 usuario=self.user,
                 nome=f'Baralho de teste {i} ({str(tag_idiomas)})',
                 publico=True,
-            ) for i in range(1, 10+1)
-        ]
+            ) for i in range(1, 10+1)]
         for baralho in self.baralhos_tag_idiomas:
             baralho.tags.add(tag_idiomas)
 
@@ -47,8 +46,7 @@ class MesaViewTestCase(APITestCase):
                 usuario=self.user,
                 nome=f'Baralho de teste {i} ({str(tag_enem)})',
                 publico=True,
-            ) for i in range(1, 10+1)
-        ]
+            ) for i in range(1, 10+1)]
         for baralho in self.baralhos_tag_enem:
             baralho.tags.add(tag_enem)
 
@@ -62,55 +60,36 @@ class MesaViewTestCase(APITestCase):
                 usuario=self.user,
                 nome=f'Baralho de teste {i}',
                 publico=True,
-            ) for i in range(1, 10+1)
-        ]
+            ) for i in range(1, 10+1)]
         for baralho in self.baralhos_com_2_tags:
-            for tag in tags:
-                baralho.tags.add(tag)
+            for tag in tags: baralho.tags.add(tag)
 
     def test_get(self):
         response = self.client.get(self.url)
-               
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK
-        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_get_detail(self):
         response = self.client.get(self.url_detail)
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK
-        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_com_filtros(self):
-        
-        response = self.client.get(
-            self.url, 
-            QUERY_STRING='tags=estudos+faculdade'
-        )
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK
-        )
+        query = 'tags=estudos+faculdade'
+        response = self.client.get(self.url, QUERY_STRING=query)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_clonar_baralho(self):
-        data = {}
+        url_clonar = reverse('mesa-clonar-baralho', kwargs={'pk':40})
         user2 = User.objects.create(
             username='Username2 test',
             email='test2@email.com',
             password='password', #Senha não criptografada
-        )
-        self.client.force_authenticate(user2)
-        url_clonar = reverse('mesa-clonar-baralho', kwargs={'pk':40})
-        response = self.client.post(url_clonar, data, format='json')
-        
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_503_SERVICE_UNAVAILABLE
-        )
+        ); self.client.force_authenticate(user2)
 
+        response = self.client.post(url_clonar)
+        self.assertEqual(
+            response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    #Queries
     def test_mesa_list(self):
         with self.assertNumQueries(3):
             self.client.get(self.url)
@@ -124,10 +103,9 @@ class MesaViewTestCase(APITestCase):
             username='Username test2',
             email='test@email2.com',
             password='password', #Senha não criptografada
-        )
-        self.client.force_authenticate(user2)
-        url_clonar = self.url_detail + 'clonar/'
+        ); self.client.force_authenticate(user2)
         
+        url_clonar = self.url_detail + 'clonar/'
         with self.assertNumQueries(1):
             self.client.post(url_clonar, format='json')
     
@@ -135,30 +113,25 @@ class MesaViewTestCase(APITestCase):
         baralho = Baralho.objects.create(
             usuario=self.user,
             nome='Meu baralho',
-            publico=True
-        )
+            publico=True)
 
         cartas = [
             Carta.objects.create(
                 baralho=baralho,
                 frente=Frente.objects.create(
-                    texto=f'Texto da frente {i}'
-                ),
+                    texto=f'Texto da frente {i}'),
                 verso=Verso.objects.create(
-                    texto=f'Texto do verso {i}'
-                ),
+                    texto=f'Texto do verso {i}'),
                 proxima_revisao=date.today(),
                 criada=date.today()
-            ) for i in range(100)
-        ]
+            ) for i in range(100)]
+        
         user2 = User.objects.create(
             username='Username test2',
             email='test@email2.com',
             password='password', #Senha não criptografada
-        )
+        ); self.client.force_authenticate(user2)
 
-        self.client.force_authenticate(user2)
         url_clonar = reverse('mesa-detail', kwargs={'pk':41}) + 'clonar/'
         with self.assertNumQueries(1):
-            self.client.post(url_clonar, format='json')
-    
+            self.client.post(url_clonar)

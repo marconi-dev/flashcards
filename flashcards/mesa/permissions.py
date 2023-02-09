@@ -1,5 +1,8 @@
 from rest_framework import permissions
-from cadastro_e_login.models import User
+
+from baralhos.models.models import Baralho
+
+
 class UsuarioNaoDono(permissions.BasePermission):
     def has_permission(self, request, view):    
         usuario = request.user
