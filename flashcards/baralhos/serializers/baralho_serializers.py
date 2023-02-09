@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from baralhos.models.models import Baralho, Carta, Tag
 
+
 class CartaRelation(serializers.ModelSerializer):
     frente = serializers.StringRelatedField()
     verso = serializers.StringRelatedField()
@@ -16,11 +17,11 @@ class CartaRelation(serializers.ModelSerializer):
 class BaralhoDetailSerializer(serializers.ModelSerializer):
     cartas = CartaRelation(many=True)
     tags = serializers.StringRelatedField(many=True)
-    
     num_cartas_nao_vistas = serializers.IntegerField(read_only=True)
     num_cartas_para_revisar = serializers.IntegerField(read_only=True)
     total_de_cartas = serializers.IntegerField(read_only=True)
     
+
     class Meta:
         model = Baralho
         fields = [
@@ -37,6 +38,7 @@ class BaralhoSerializer(serializers.ModelSerializer):
     num_cartas_para_revisar = serializers.IntegerField(read_only=True)
     total_de_cartas = serializers.IntegerField(read_only=True)
 
+
     class Meta:
         model = Baralho
         fields = [
@@ -44,14 +46,11 @@ class BaralhoSerializer(serializers.ModelSerializer):
             'num_cartas_para_revisar', 'tags', 'total_de_cartas'
         ]
 
-
     def validate_tags(self, tags):
         try: return tags.lstrip().strip().lower().split(' ')
         except:
             raise serializers.ValidationError(
-                'Tags devem ser separadas por espaço em branco'
-            )
-    
+                'Tags devem ser separadas por espaço em branco')
 
     def __add_tags(self, tags, baralho):
         """
@@ -61,24 +60,24 @@ class BaralhoSerializer(serializers.ModelSerializer):
             tag = Tag.objects.get_or_create(nome=nome)
             baralho.tags.add(tag[0])
 
+    def __create_with_tags(self, data):
+        tags = data.pop('tags')
+        baralho = Baralho.objects.create(**data)
+        self.__add_tags(tags, baralho)
+        return baralho
 
     def create(self, data):
         if 'tags' in data: 
-            tags = data.pop('tags')
-            baralho = Baralho.objects.create(**data)
-            self.__add_tags(tags, baralho)
-            return baralho
-
+            return self.__create_with_tags(data)
+        
         return Baralho.objects.create(**data)    
 
     def update(self, baralho, data):
+        tags = data.get('tags')
         baralho.nome = data.get('nome', baralho.nome)
-        
-        if 'tags' in data: self.__add_tags(data['tags'], baralho)
+
+        if tags is not None: 
+            self.__add_tags(tags, baralho)
 
         baralho.save()
         return baralho
-
-        
-
-        

@@ -103,9 +103,9 @@ class BaralhoViewTestCase(APITestCase):
 
     def test_baralhos_get_com_filtro_de_nome(self):
         baralhos = [
-                Baralho(nome=f'Nome de teste nº{i}', usuario=self.usuario)
-                for i in range(1, 10+1)
-            ]; Baralho.objects.bulk_create(baralhos)
+            Baralho(nome=f'Nome de teste nº{i}', usuario=self.usuario)
+            for i in range(1, 10+1)
+        ]; Baralho.objects.bulk_create(baralhos)
 
         #Request com nome incompleto de um baralho...
         request_com_nome=self._make_query_request('nome=Nome')
@@ -118,8 +118,15 @@ class BaralhoViewTestCase(APITestCase):
         self.assertEqual(len(req_com_nome_vazio['results']), 0)
 
     def test_baralhos_post(self):
-        data = {"nome": "Um novo Baralho",
-                "tags": 'teste idiomas poliglota teste teste'}
+        data = {"nome": "Um novo Baralho"}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)        
+
+    def test_baralhos_post_com_tags(self):
+        data = {
+            "nome": "Um novo Baralho",
+            "tags": 'teste idiomas poliglota teste teste'
+        } 
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)        
         self.assertEqual(Tag.objects.count(), 3)
