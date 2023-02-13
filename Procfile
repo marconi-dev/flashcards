@@ -1,0 +1,1 @@
+web: python flashcards/manage.py migrate && gunicorn --chdir flashcards/ flashcards.wsgi
