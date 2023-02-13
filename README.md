@@ -1,5 +1,5 @@
 # Flashcards
-Uma REST API feita usando Django / Django REST Framework, PostGres como banco de dados relacional, Redis como banco de dados para Cache.
+Uma REST API feita usando Django / Django REST Framework, PostGres como banco de dados relacional, Redis como banco de dados para Cache e AWS S3 para armazenamento das imagens.
 <hr>
 
 ### Documentação completa:
