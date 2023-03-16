@@ -106,3 +106,7 @@ class CartaViewSet(ModelViewSet):
                 *args, data=kwargs['data'], partial=True)
 
         return super().get_serializer(*args, **kwargs)
+    
+    def perform_destroy(self, instance):
+        instance.frente.imagem.delete(save=False)
+        return super().perform_destroy(instance)
