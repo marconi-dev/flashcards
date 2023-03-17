@@ -1,5 +1,4 @@
 from datetime import date
-
 from rest_framework import serializers
 from baralhos.models.models import Tag, Baralho, Carta, Frente, Verso 
 
@@ -11,26 +10,33 @@ class CartaCreateSerializer(serializers.Serializer):
     tags = serializers.CharField(required=False, write_only=True)
 
     def validate_tags(self, tags: str):
-        try: return tags.lstrip().strip().lower().split(' ')
-        except: raise serializers.ValidationError(
-                'Tags devem ser separadas por espaço em branco')
+        try: 
+            return tags.lstrip().strip().lower().split(' ')
+        except: 
+            raise serializers.ValidationError(
+                    'Tags devem ser separadas por espaço em branco'
+                )
 
     def validate(self, attrs):
         if (not 'frente' in attrs and 
             not 'frente_img' in attrs):
             raise serializers.ValidationError(
-                'A frente deve possuir ao menos um texto ou uma imagem') 
+                'A frente deve possuir ao menos um texto ou uma imagem'
+            ) 
         return attrs
 
     def __set_frente_info(self, data):
         """
-        Define as informações da instancia (Frente) que será 
+        Define as informações da instância (Frente) que será 
         utilizada na carta.
         """
         frente = dict()        
         
-        if 'frente_img' in data: frente['imagem'] = data['frente_img']
-        elif 'frente' in data: frente['texto'] = data['frente']
+        if 'frente_img' in data: 
+            frente['imagem'] = data['frente_img']
+            
+        elif 'frente' in data: 
+            frente['texto'] = data['frente']
         
         return frente
     
