@@ -1,5 +1,6 @@
+# PYTHON
 from datetime import date
-
+# DRF
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -9,9 +10,9 @@ from rest_framework.mixins import (
     RetrieveModelMixin as RMixin,
     UpdateModelMixin as UMixin
 )
-
+# DJANGO
 from django.shortcuts import get_object_or_404
-
+# FLASHCARDS
 from estudos.permissions import TerminouDeRevisar
 from estudos.serializers import EstudosSerializer
 from baralhos.models.models import Carta
@@ -19,6 +20,7 @@ from baralhos.models.models import Carta
 
 # Create your views here.
 HOJE = date.today()
+
 class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
     serializer_class = EstudosSerializer
     permission_classes = [IsAuthenticated, TerminouDeRevisar]
@@ -49,7 +51,8 @@ class EstudosViewSet(LMixin, RMixin, UMixin, GViewSet):
         if status_da_carta is None:        
             return Response(
                 {"message":"Não foi informado um status de estudo"}, 
-                status.HTTP_400_BAD_REQUEST)
+                status.HTTP_400_BAD_REQUEST
+            )
         
         carta.estudar(status_da_carta)
         return Response({'message':'ok'}, status.HTTP_200_OK)

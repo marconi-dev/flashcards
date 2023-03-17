@@ -1,5 +1,4 @@
 from rest_framework_nested.routers import NestedSimpleRouter as NSRouter
-
 from baralhos.urls import baralho_router
 from estudos.views import EstudosViewSet
 
