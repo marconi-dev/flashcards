@@ -1,6 +1,5 @@
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedSimpleRouter
-
 from .views import BaralhoViewSet, CartaViewSet
 
 

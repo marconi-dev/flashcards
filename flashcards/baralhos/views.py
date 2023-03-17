@@ -1,19 +1,23 @@
+#DRF
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
-
+#DJANGO
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_list_or_404, get_object_or_404
-
+#FLASHCARDS
 from .serializers.carta_serializers import (
-    CartaSerializer, CartaCreateSerializer)
+    CartaSerializer, CartaCreateSerializer
+)
 from .serializers.baralho_serializers import (
-    BaralhoDetailSerializer, BaralhoSerializer)
+    BaralhoDetailSerializer, BaralhoSerializer
+)
 from .models.models import Baralho, Carta
-# Create your views here.
 
+
+# Create your views here.
 class BaralhoViewSet(ModelViewSet):
     serializer_class = BaralhoSerializer
     permission_classes = [IsAuthenticated]
@@ -47,7 +51,8 @@ class BaralhoViewSet(ModelViewSet):
 
         if self.request.method == 'POST':
             return BaralhoSerializer(
-                data=self.request.data, context={"request":self.request})
+                data=self.request.data, context={"request":self.request}
+            )
         
         return super().get_serializer(*args, **kwargs)
 
@@ -61,13 +66,15 @@ class BaralhoViewSet(ModelViewSet):
         if not baralho.tags.exists():
             return Response(
                 {'message':'Baralhos públicos devem possuir tags'}, 
-                status.HTTP_401_UNAUTHORIZED)
+                status.HTTP_401_UNAUTHORIZED
+            )
         
         baralho.publico = True 
         baralho.save()
         return Response(
             {'message':'Baralho publicado com successo'}, 
-            status.HTTP_201_CREATED)
+            status.HTTP_201_CREATED
+        )
 
 
 class CartaViewSet(ModelViewSet):
@@ -99,11 +106,13 @@ class CartaViewSet(ModelViewSet):
         """
         if self.request.method == 'POST':
             return CartaCreateSerializer(
-                data=kwargs['data'], context={**self.kwargs})
+                data=kwargs['data'], context={**self.kwargs}
+            )
 
         if self.request.method == 'PATCH':
             return CartaCreateSerializer(
-                *args, data=kwargs['data'], partial=True)
+                *args, data=kwargs['data'], partial=True
+            )
 
         return super().get_serializer(*args, **kwargs)
     
