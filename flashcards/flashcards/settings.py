@@ -196,9 +196,10 @@ SIMPLE_JWT = {
 
 
 #CORSHEADERS
-from corsheaders.defaults import default_methods
+from corsheaders.defaults import default_methods, default_headers
 CORS_ALLOW_ALL_ORIGINS = True 
 CORS_ALLOW_METHODS = list(default_methods)
+CORS_ALLOW_HEADERS = list(default_headers)
 
 #AWS S3
 if DEBUG == False:
