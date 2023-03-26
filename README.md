@@ -40,3 +40,5 @@ Para garantir a confiabilidade e a estabilidade do armazenamento permanente dos 
 Foi adotado o Redis como solução de armazenamento de cache, configurando-o por meio da biblioteca django-redis. Essa medida procura diminuir a quantidade de buscas no banco de dados SQL e por consequência seu reduzir custos.
 ### Amazon S3
 Para o armazenamento de mídia foi utilizado o Simple Storage Service da AWS, configurada com a biblioteca django-storages. 
+### Postman
+Para disponibilizar a documentação de uso da API, utilizei o Postman.
